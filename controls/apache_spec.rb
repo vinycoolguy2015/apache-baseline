@@ -184,39 +184,4 @@ control 'apache-12' do
   end
 end
 
-control 'apache-13' do
-  impact 1.0
-  title 'SSL honor cipher order'
-  desc 'When choosing a cipher during an SSLv3 or TLSv1 handshake, normally the client\'s preference is used. If this directive is enabled, the server\'s preference will be used instead.'
 
-  describe file(File.join(apache.conf_dir, '/mods-enabled/ssl.conf')) do
-    its('content') { should match(/^\s*?SSLHonorCipherOrder\s+?On/i) }
-  end
-
-  sites_enabled_path = File.join(apache.conf_dir, '/sites-enabled/')
-  loaded_sites = command('ls ' << sites_enabled_path).stdout.split.keep_if { |file_name| /.conf/.match(file_name) }
-
-  loaded_sites.each do |id|
-    virtual_host = file(File.join(sites_enabled_path, id)).content.gsub(/#.*$/, '').scan(%r{<virtualhost.*443(.*?)<\/virtualhost>}im).flatten
-    next if virtual_host.empty?
-
-    describe virtual_host do
-      it { should include(/^\s*?SSLHonorCipherOrder\s+?On/i) }
-    end
-  end
-end
-
-control 'apache-14' do
-  impact 1.0
-  title 'Enable Apache Logging'
-  desc 'Apache allows you to logging independently of your OS logging. It is wise to enable Apache logging, because it provides more information, such as the commands entered by users that have interacted with your Web server.'
-
-  sites_enabled_path = File.join(apache.conf_dir, '/sites-enabled/')
-  loaded_sites = command('ls ' << sites_enabled_path).stdout.split.keep_if { |file_name| /.conf/.match(file_name) }
-
-  loaded_sites.each do |id|
-    describe file(File.join(sites_enabled_path, id)).content.gsub(/#.*$/, '').scan(%r{<virtualhost(.*?)<\/virtualhost>}im).flatten do
-      it { should include(/CustomLog.*$/i) }
-    end
-  end
-end
