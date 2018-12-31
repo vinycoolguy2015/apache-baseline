@@ -132,35 +132,7 @@ control 'apache-07' do
   # end
 end
 
-control 'apache-08' do
-  impact 1.0
-  title 'Should not load certain modules'
-  desc 'Apache HTTP should not load legacy modules'
 
-  module_path = File.join(apache.conf_dir, '/mods-enabled/')
-  loaded_modules = command('ls ' << module_path).stdout.split.keep_if { |file_name| /.load/.match(file_name) }
-
-  loaded_modules.each do |id|
-    describe file(File.join(module_path, id)) do
-      its('content') { should_not match(/^\s*?LoadModule\s+?dav_module/) }
-      its('content') { should_not match(/^\s*?LoadModule\s+?cgid_module/) }
-      its('content') { should_not match(/^\s*?LoadModule\s+?cgi_module/) }
-      its('content') { should_not match(/^\s*?LoadModule\s+?include_module/) }
-    end
-  end
-
-  # open bug https://github.com/chef/inspec/issues/786, if the bug solved use this test
-  # describe apache_conf do
-  #   its('LoadModule') { should_not eq 'dav_module' }
-  #   its('LoadModule') { should_not eq 'cgid_module' }
-  #   its('LoadModule') { should_not eq 'cgi_module' }
-  #   its('LoadModule') { should_not eq 'include_module' }
-  #   its('content') { should_not match(/^\s*?LoadModule\s+?dav_module/) }
-  #   its('content') { should_not match(/^\s*?LoadModule\s+?cgid_module/) }
-  #   its('content') { should_not match(/^\s*?LoadModule\s+?cgi_module/) }
-  #   its('content') { should_not match(/^\s*?LoadModule\s+?include_module/) }
-  # end
-end
 
 control 'apache-09' do
   impact 1.0
